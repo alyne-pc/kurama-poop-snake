@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Kurama Poop Snake</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    font-family: 'Segoe UI', sans-serif;
+    color: #111;
+  }
+  h1 { font-size: 1.6rem; margin-bottom: 4px; letter-spacing: 1px; }
+  #info { font-size: 0.9rem; color: #333; margin-bottom: 10px; }
+  #score-board { display: flex; gap: 30px; margin-bottom: 12px; }
+  .score-box {
+    background: #f5f0e8;
+    border: 2px solid #8B4513;
+    border-radius: 10px;
+    padding: 6px 18px;
+    text-align: center;
+    font-size: 0.85rem;
+    color: #333;
+  }
+  .score-box span { display: block; font-size: 1.4rem; font-weight: bold; color: #111; }
+  canvas {
+    border: 3px solid #8B4513;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 0 20px #8B451344;
+  }
+  #msg { margin-top: 14px; font-size: 1rem; color: #333; height: 24px; }
+  #restart {
+    margin-top: 10px;
+    padding: 8px 28px;
+    background: #8B4513;
+    color: #f2dfd3;
+    border: none;
+    border-radius: 20px;
+    font-size: 1rem;
+    cursor: pointer;
+    display: none;
+  }
+  #restart:hover { background: #a0522d; }
+</style>
+</head>
+<body>
+<h1>🐕 Kurama Poop Snake 💩</h1>
+<div id="info">Use as setas do teclado para mover a Kurama!</div>
+<div id="score-board">
+  <div class="score-box">Pontuação<span id="score">0</span></div>
+  <div class="score-box">Recorde<span id="best">0</span></div>
+</div>
+<canvas id="c" width="400" height="400"></canvas>
+<div id="msg">Pressione qualquer seta para começar!</div>
+<button id="restart" onclick="init()">🐕 Jogar de novo</button>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const scoreEl = document.getElementById('score');
+const bestEl = document.getElementById('best');
+const msgEl = document.getElementById('msg');
+const restartBtn = document.getElementById('restart');
+
+const SZ = 20, COLS = 20, ROWS = 20;
+const BODY_HEARTS = ['🤎', '🖤', '🤍'];
+const BODY = (i) => BODY_HEARTS[i % BODY_HEARTS.length];
+const FOODS = ['💩'];
+const MSGS = [
+  '🐕 Para com isso, Kurama!',
+  '💩 Tão linda, pena que come cocô!',
+  '🐾 Poxa vida, Kurama!',
+  '🐕 Mas não é possível!',
+  '💩 Solta esse cocô!',
+];
+
+const HEAD_IMG = new Image();
+HEAD_IMG.crossOrigin = 'anonymous';
+HEAD_IMG.src = 'https://i.postimg.cc/v834M6wT/be8c9869-1ab9-4d0f-b3ca-bed9f6a6168c.png';
+const headCanvas = document.createElement('canvas');
+headCanvas.width = SZ; headCanvas.height = SZ;
+
+let snake, dir, nextDir, food, score, best = 0, started = false, loop;
+
+function init() {
+  snake = [{x:10,y:10},{x:9,y:10},{x:8,y:10}];
+  dir = {x:1,y:0};
+  nextDir = {x:1,y:0};
+  score = 0;
+  scoreEl.textContent = 0;
+  started = false;
+  msgEl.textContent = 'Pressione qualquer seta para começar!';
+  restartBtn.style.display = 'none';
+  placeFood();
+  clearInterval(loop);
+  draw();
+}
+
+function placeFood() {
+  let pos;
+  do {
+    pos = { x: Math.floor(Math.random()*COLS), y: Math.floor(Math.random()*ROWS) };
+  } while (snake.some(s => s.x===pos.x && s.y===pos.y));
+  food = pos;
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // grid marrom
+  ctx.strokeStyle = '#8B4513';
+  ctx.lineWidth = 0.4;
+  for (let i = 0; i <= COLS; i++) {
+    ctx.beginPath(); ctx.moveTo(i*SZ,0); ctx.lineTo(i*SZ,canvas.height); ctx.stroke();
+  }
+  for (let j = 0; j <= ROWS; j++) {
+    ctx.beginPath(); ctx.moveTo(0,j*SZ); ctx.lineTo(canvas.width,j*SZ); ctx.stroke();
+  }
+
+  // comida
+  ctx.font = `${SZ-2}px serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('💩', food.x*SZ+SZ/2, food.y*SZ+SZ/2);
+
+  // corpo com corações alternados
+  for (let i = 1; i < snake.length; i++) {
+    ctx.fillText(BODY(i), snake[i].x*SZ+SZ/2, snake[i].y*SZ+SZ/2);
+  }
+
+  // cabeça
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  if (HEAD_IMG.complete && HEAD_IMG.naturalWidth > 0) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(snake[0].x*SZ+SZ/2, snake[0].y*SZ+SZ/2, SZ/2, 0, Math.PI*2);
+    ctx.clip();
+    ctx.drawImage(HEAD_IMG, snake[0].x*SZ, snake[0].y*SZ, SZ, SZ);
+    ctx.restore();
+  } else {
+    ctx.font = `${SZ}px serif`;
+    ctx.fillText('🐶', snake[0].x*SZ+SZ/2, snake[0].y*SZ+SZ/2);
+  }
+}
+
+function step() {
+  dir = nextDir;
+  const head = {x: snake[0].x+dir.x, y: snake[0].y+dir.y};
+  if (head.x<0||head.x>=COLS||head.y<0||head.y>=ROWS) return gameOver();
+  if (snake.some(s=>s.x===head.x&&s.y===head.y)) return gameOver();
+  snake.unshift(head);
+  if (head.x===food.x && head.y===food.y) {
+    score++;
+    scoreEl.textContent = score;
+    if (score>best) { best=score; bestEl.textContent=best; }
+    placeFood();
+    msgEl.textContent = MSGS[Math.floor(Math.random()*MSGS.length)];
+  } else {
+    snake.pop();
+  }
+  draw();
+}
+
+function gameOver() {
+  clearInterval(loop);
+  started = false;
+  msgEl.textContent = `💔 A Kurama vomitou! Você fez ${score} pontos!`;
+  restartBtn.style.display = 'inline-block';
+  draw();
+}
+
+document.addEventListener('keydown', e => {
+  const keys = {ArrowUp:{x:0,y:-1},ArrowDown:{x:0,y:1},ArrowLeft:{x:-1,y:0},ArrowRight:{x:1,y:0}};
+  if (!keys[e.key]) return;
+  e.preventDefault();
+  const d = keys[e.key];
+  if (d.x===-dir.x && d.y===-dir.y) return;
+  nextDir = d;
+  if (!started) {
+    started = true;
+    msgEl.textContent = '🐕 Solta esse cocô, Kurama!';
+    loop = setInterval(step, 150);
+  }
+});
+
+init();
+</script>
+</body>
+</html>

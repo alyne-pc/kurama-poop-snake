@@ -58,7 +58,7 @@
 </div>
 <canvas id="c" width="400" height="400"></canvas>
 <div id="msg">Pressione qualquer seta para começar!</div>
-<button id="restart" onclick="init()">🐕 Jogar de novo</button>
+<button id="restart" onclick="init()">🐶 Jogar de novo</button>
 
 <script>
 const canvas = document.getElementById('c');
@@ -73,10 +73,10 @@ const BODY_HEARTS = ['🤎', '🖤', '🤍'];
 const BODY = (i) => BODY_HEARTS[i % BODY_HEARTS.length];
 const FOODS = ['💩'];
 const MSGS = [
-  '🐕 Para com isso, Kurama!',
+  '🐶 Para com isso, Kurama!',
   '💩 Tão linda, pena que come cocô!',
   '🐾 Poxa vida, Kurama!',
-  '🐕 Mas não é possível!',
+  '🐶 Mas não é possível!',
   '💩 Solta esse cocô!',
 ];
 
@@ -185,7 +185,7 @@ document.addEventListener('keydown', e => {
   nextDir = d;
   if (!started) {
     started = true;
-    msgEl.textContent = '🐕 Solta esse cocô, Kurama!';
+    msgEl.textContent = '🐶 Solta esse cocô, Kurama!';
     loop = setInterval(step, 150);
   }
 });

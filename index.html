@@ -136,7 +136,7 @@ function init() {
   snake = [{x:10,y:10},{x:9,y:10},{x:8,y:10}];
   dir = {x:1,y:0}; nextDir = {x:1,y:0};
   score = 0; scoreEl.textContent = 0;
-  started = false;
+  dead=false;
   msgEl.textContent = 'Pressione qualquer seta para começar!';
   restartBtn.style.display = 'none';
   placeFood(); clearInterval(loop); draw();
@@ -188,13 +188,16 @@ function step() {
 }
 
 function gameOver(){
-  clearInterval(loop); started=false;
+  clearInterval(loop); started=false; dead=true;
   msgEl.textContent=`💔 A Kurama vomitou! Você fez ${score} pontos!`;
   restartBtn.style.display='flex';
   draw();
 }
 
+let dead = false;
+
 function move(d){
+  if(dead){ init(); return; }
   if(d.x===-dir.x&&d.y===-dir.y) return;
   nextDir=d;
   if(!started){
@@ -203,6 +206,8 @@ function move(d){
     loop=setInterval(step,150);
   }
 }
+
+
 
 // Teclado
 document.addEventListener('keydown', e=>{

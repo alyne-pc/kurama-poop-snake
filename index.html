@@ -54,7 +54,6 @@
   }
   #restart img { width: 22px; height: 22px; border-radius: 50%; }
   #restart:hover { background: #a0522d; }
-
   #dpad {
     margin-top: 10px;
     display: grid;
@@ -82,7 +81,7 @@
 </style>
 </head>
 <body>
-<h1><img id="title-img" src="https://i.postimg.cc/v834M6wT/be8c9869-1ab9-4d0f-b3ca-bed9f6a6168c.png"> Kurama Poop Snake 💩</h1>
+<h1><img src="https://i.postimg.cc/v834M6wT/be8c9869-1ab9-4d0f-b3ca-bed9f6a6168c.png"> Kurama Poop Snake 💩</h1>
 <div id="info">💻 Setas do teclado &nbsp;|&nbsp; 📱 Deslize ou use os botões!</div>
 <div id="score-board">
   <div class="score-box">Pontuação<span id="score">0</span></div>
@@ -91,7 +90,6 @@
 <canvas id="c"></canvas>
 <div id="msg">Pressione qualquer seta para começar!</div>
 <button id="restart" onclick="init()"><img src="https://i.postimg.cc/v834M6wT/be8c9869-1ab9-4d0f-b3ca-bed9f6a6168c.png"> Jogar de novo</button>
-
 <div id="dpad">
   <button class="dpad-btn" id="btn-up">⬆️</button>
   <button class="dpad-btn" id="btn-left">⬅️</button>
@@ -107,14 +105,12 @@ const bestEl = document.getElementById('best');
 const msgEl = document.getElementById('msg');
 const restartBtn = document.getElementById('restart');
 
-// Tamanho do canvas baseado no espaço disponível
-const vw = window.innerWidth;
-const vh = window.innerHeight;
+const vw = window.innerWidth, vh = window.innerHeight;
 const isMobile = vw < 600;
-const maxCanvas = isMobile ? Math.min(vw * 0.92, vh * 0.45) : Math.min(vw * 0.6, vh * 0.5, 400);
-const SIZE = Math.max(Math.floor(maxCanvas / 20) * 20, 200);
+const maxCanvas = isMobile ? Math.min(vw*0.92, vh*0.45) : Math.min(vw*0.6, vh*0.5, 400);
+const SIZE = Math.max(Math.floor(maxCanvas/20)*20, 200);
 canvas.width = SIZE; canvas.height = SIZE;
-const SZ = SIZE / 20, COLS = 20, ROWS = 20;
+const SZ = SIZE/20, COLS = 20, ROWS = 20;
 
 const BODY_HEARTS = ['🤎','🖤','🤍'];
 const BODY = i => BODY_HEARTS[i % BODY_HEARTS.length];
@@ -126,17 +122,16 @@ const MSGS = [
   '💩 Solta esse cocô!',
 ];
 
-// Pré-carrega a imagem antes de tudo
 const HEAD_IMG = new Image();
 HEAD_IMG.crossOrigin = 'anonymous';
 
-let snake, dir, nextDir, food, score, best = 0, started = false, loop;
+let snake, dir, nextDir, food, score, best = 0, started = false, dead = false, loop;
 
 function init() {
   snake = [{x:10,y:10},{x:9,y:10},{x:8,y:10}];
   dir = {x:1,y:0}; nextDir = {x:1,y:0};
   score = 0; scoreEl.textContent = 0;
-  dead=false;
+  started = false; dead = false;
   msgEl.textContent = 'Pressione qualquer seta para começar!';
   restartBtn.style.display = 'none';
   placeFood(); clearInterval(loop); draw();
@@ -154,11 +149,9 @@ function draw() {
   ctx.strokeStyle='#8B4513'; ctx.lineWidth=0.4;
   for(let i=0;i<=COLS;i++){ctx.beginPath();ctx.moveTo(i*SZ,0);ctx.lineTo(i*SZ,canvas.height);ctx.stroke();}
   for(let j=0;j<=ROWS;j++){ctx.beginPath();ctx.moveTo(0,j*SZ);ctx.lineTo(canvas.width,j*SZ);ctx.stroke();}
-
   ctx.font=`${SZ-2}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
   ctx.fillText('💩', food.x*SZ+SZ/2, food.y*SZ+SZ/2);
   for(let i=1;i<snake.length;i++) ctx.fillText(BODY(i), snake[i].x*SZ+SZ/2, snake[i].y*SZ+SZ/2);
-
   if(HEAD_IMG.complete && HEAD_IMG.naturalWidth>0){
     ctx.save();
     ctx.beginPath();
@@ -194,8 +187,6 @@ function gameOver(){
   draw();
 }
 
-let dead = false;
-
 function move(d){
   if(dead){ init(); return; }
   if(d.x===-dir.x&&d.y===-dir.y) return;
@@ -207,9 +198,6 @@ function move(d){
   }
 }
 
-
-
-// Teclado
 document.addEventListener('keydown', e=>{
   const keys={ArrowUp:{x:0,y:-1},ArrowDown:{x:0,y:1},ArrowLeft:{x:-1,y:0},ArrowRight:{x:1,y:0}};
   if(!keys[e.key]) return;
@@ -217,13 +205,11 @@ document.addEventListener('keydown', e=>{
   move(keys[e.key]);
 });
 
-// D-pad
 document.getElementById('btn-up').addEventListener('touchstart',e=>{e.preventDefault();move({x:0,y:-1});},{passive:false});
 document.getElementById('btn-down').addEventListener('touchstart',e=>{e.preventDefault();move({x:0,y:1});},{passive:false});
 document.getElementById('btn-left').addEventListener('touchstart',e=>{e.preventDefault();move({x:-1,y:0});},{passive:false});
 document.getElementById('btn-right').addEventListener('touchstart',e=>{e.preventDefault();move({x:1,y:0});},{passive:false});
 
-// Swipe
 let tx=0,ty=0;
 canvas.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;e.preventDefault();},{passive:false});
 canvas.addEventListener('touchend',e=>{
@@ -234,7 +220,6 @@ canvas.addEventListener('touchend',e=>{
   e.preventDefault();
 },{passive:false});
 
-// Carrega imagem primeiro, depois inicia
 HEAD_IMG.onload = () => init();
 HEAD_IMG.onerror = () => init();
 HEAD_IMG.src = 'https://i.postimg.cc/v834M6wT/be8c9869-1ab9-4d0f-b3ca-bed9f6a6168c.png';
